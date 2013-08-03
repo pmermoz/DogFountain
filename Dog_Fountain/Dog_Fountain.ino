@@ -9,9 +9,9 @@ const int PIR_INPUT = 7;
 
 const int HC_SR04_ECHO_PIN = 5;
 const int HC_SR04_TRIGGER_PIN = 6;
-const int LED_RED_DISTANCE_PIN = A3;
-const int LED_GREEN_DISTANCE_PIN = A4;
-const int LED_BLUE_DISTANCE_PIN = A5;
+const int LED_RED_DISTANCE_PIN = A4;
+const int LED_GREEN_DISTANCE_PIN = A3;
+const int LED_BLUE_DISTANCE_PIN = A2;
 
 //#define TRIGGER_PIN  7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 //#define ECHO_PIN     8  // Arduino pin tied to echo pin on the ultrasonic sensor.
@@ -130,30 +130,35 @@ void loop()
   //--- Feedback
    
   if (didDetectPresence) {
-    analogWrite(LED_BLUE_DISTANCE_PIN, 0);
-    analogWrite(LED_RED_DISTANCE_PIN, 0);
-    analogWrite(LED_GREEN_DISTANCE_PIN, 255);
+    digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+    digitalWrite(LED_RED_DISTANCE_PIN, LOW);
+    digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
   }
   else {
     analogWrite(LED_GREEN_DISTANCE_PIN, 0);
     if (pirDetectionUntilTimeMs >  nowTimeMs) {
       if (pingFeedbackUntilTimeMs > nowTimeMs) {
-        analogWrite(LED_BLUE_DISTANCE_PIN, 0);
-        analogWrite(LED_RED_DISTANCE_PIN, 255);
+        digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+        digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
       }
       else {
-        analogWrite(LED_RED_DISTANCE_PIN, 0);
+        digitalWrite(LED_RED_DISTANCE_PIN, LOW);
         if (didPIRDetect) {
-          analogWrite(LED_BLUE_DISTANCE_PIN, 255);
+          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
         }
         else {
-          analogWrite(LED_BLUE_DISTANCE_PIN, 1);
+          //analogWrite(LED_BLUE_DISTANCE_PIN, 1);
+          //digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+          
+          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
         }
       }
     }
     else {
-        analogWrite(LED_BLUE_DISTANCE_PIN, 0);
-        analogWrite(LED_RED_DISTANCE_PIN, 0);
+        digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+        digitalWrite(LED_RED_DISTANCE_PIN, LOW);
     }
   }
   
