@@ -15,7 +15,7 @@ const int LED_BLUE_DISTANCE_PIN = A2;
 
 //#define TRIGGER_PIN  7  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 //#define ECHO_PIN     8  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define MAX_DISTANCE 100 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+const int MAX_DISTANCE = 100; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 NewPing sonar(HC_SR04_TRIGGER_PIN, HC_SR04_ECHO_PIN, MAX_DISTANCE); // NewPing setup of pins and maximum distance.
 
@@ -62,16 +62,39 @@ void setup()
   pinMode(VALVE_1_ENABLE_PIN, OUTPUT);
   //digitalWrite(VALVE_1_ENABLE_PIN, LOW);
 
-  valveOff();
+  //valveOff();
+  //valveOn();
 
   //---
 
   Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
 
+  // RED - > GREEN
+  // GREEN -> RED
+  // 
+  //digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
+  //digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
+  //digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+  //digitalWrite(LED_OUTPUT, HIGH);
+
+  // CH B
+  //digitalWrite(VALVE_1_ON_PIN, LOW);
+  //digitalWrite(VALVE_1_ON_PIN, HIGH);
+  // CH C
+  //digitalWrite(VALVE_1_ENABLE_PIN, LOW);
+  //digitalWrite(VALVE_1_ENABLE_PIN, HIGH);
+  // CH D
+  //digitalWrite(VALVE_1_OFF_PIN, LOW);
+  //digitalWrite(VALVE_1_OFF_PIN, HIGH);
+
+  //digitalWrite(LED_OUTPUT, HIGH);
 }
 
 void loop()
 { 
+  //delay(1000);
+  //return;
+
   unsigned long nowTimeMs = millis();
 
   boolean didPIRDetect = digitalRead(PIR_INPUT);
@@ -79,7 +102,7 @@ void loop()
     lastPIRDetection = nowTimeMs;
     pirDetectionUntilTimeMs = nowTimeMs + 5 * 1000;
   }
-  
+
   //--- HC-SR04
   boolean didPing = false;
   boolean didDetectPresence = false;
@@ -98,7 +121,7 @@ void loop()
 
   if (pirDetectionUntilTimeMs >  nowTimeMs && distanceCm > 0 && distanceCm < 50) {
     didDetectPresence = true;
-    
+
     if (startWaterTime == 0) {
       valveOn();
     }
@@ -125,97 +148,112 @@ void loop()
       periodicValveOff = nowTimeMs;
     }
   }
-  
-  
+
+
   //--- Feedback
-   
+
   if (didDetectPresence) {
     digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
     digitalWrite(LED_RED_DISTANCE_PIN, LOW);
     digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
   }
   else {
-    analogWrite(LED_GREEN_DISTANCE_PIN, 0);
     if (pirDetectionUntilTimeMs >  nowTimeMs) {
       if (pingFeedbackUntilTimeMs > nowTimeMs) {
         digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
         digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
+        digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
       }
       else {
         digitalWrite(LED_RED_DISTANCE_PIN, LOW);
-        if (didPIRDetect) {
-          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+        
+        if (startWaterTime > 0) {
+          digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+          digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
         }
         else {
-          //analogWrite(LED_BLUE_DISTANCE_PIN, 1);
-          //digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
-          
           digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
-          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
-          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+          digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
         }
+        
+        
+//        if (didPIRDetect) {
+//          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+//        }
+//        else {
+//          //analogWrite(LED_BLUE_DISTANCE_PIN, 1);
+//          //digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+//
+//          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+//          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+//          digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+//        }
       }
     }
     else {
-        digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
-        digitalWrite(LED_RED_DISTANCE_PIN, LOW);
+      digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+      digitalWrite(LED_RED_DISTANCE_PIN, LOW);
+      digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
     }
   }
-  
-//      if (distanceCm == 0) {
-//      analogWrite(LED_RED_DISTANCE_PIN, 0);
-//      analogWrite(LED_GREEN_DISTANCE_PIN, 0);
-//      analogWrite(LED_BLUE_DISTANCE_PIN, 0);
-//    }
-//    else {
-//      Serial.print("Ping: ");
-//      Serial.print(distanceCm); // Convert ping time to distance and print result (0 = outside set distance range, no ping echo)
-//      Serial.println("cm");
-//
-//      int redLightLevel = 0;
-//      int greenLightLevel = 0;
-//      int blueLightLevel = 0;
-//      if (distanceCm < 10) {
-//        //redLightLevel = map(distance, 0, 100, 255, 0);
-//        redLightLevel = map(distanceCm, 0, 10, 255, 50);
-//      }
-//      else if (distanceCm < 30) {
-//        //redLightLevel = map(distance, 200, 300, 255, 0);
-//        //blueLightLevel = map(distance, 200, 300, 0, 255);
-//        redLightLevel = map(distanceCm, 10, 30, 150, 50); //150;
-//        greenLightLevel = map(distanceCm, 10, 30, 255, 155); //200;
-//      }
-//      else if (distanceCm < 50) {
-//        //redLightLevel = map(distance, 200, 300, 255, 0);
-//        //blueLightLevel = map(distance, 200, 300, 0, 255);
-//        greenLightLevel = map(distanceCm, 30, 50, 150, 255);
-//      }
-//      else  {
-//        //blueLightLevel = map(distance, 300, MAX_DISTANCE*10, 255, 0);
-//        //greenLightLevel = map(distance, 300, MAX_DISTANCE*10, 0, 255);
-//        blueLightLevel = map(distanceCm, 50, MAX_DISTANCE, 255, 10);
-//      }
-//
-//      //      Serial.print("LED: R(");
-//      //      Serial.print(redLightLevel);
-//      //      Serial.print(") G(");
-//      //      Serial.print(greenLightLevel);
-//      //      Serial.print(") B(");
-//      //      Serial.print(blueLightLevel);
-//      //      Serial.println(")");
-//
-//      analogWrite(LED_RED_DISTANCE_PIN, redLightLevel);
-//      analogWrite(LED_GREEN_DISTANCE_PIN, greenLightLevel);
-//      analogWrite(LED_BLUE_DISTANCE_PIN, blueLightLevel);
-//    }
+
+  //      if (distanceCm == 0) {
+  //      analogWrite(LED_RED_DISTANCE_PIN, 0);
+  //      analogWrite(LED_GREEN_DISTANCE_PIN, 0);
+  //      analogWrite(LED_BLUE_DISTANCE_PIN, 0);
+  //    }
+  //    else {
+  //      Serial.print("Ping: ");
+  //      Serial.print(distanceCm); // Convert ping time to distance and print result (0 = outside set distance range, no ping echo)
+  //      Serial.println("cm");
+  //
+  //      int redLightLevel = 0;
+  //      int greenLightLevel = 0;
+  //      int blueLightLevel = 0;
+  //      if (distanceCm < 10) {
+  //        //redLightLevel = map(distance, 0, 100, 255, 0);
+  //        redLightLevel = map(distanceCm, 0, 10, 255, 50);
+  //      }
+  //      else if (distanceCm < 30) {
+  //        //redLightLevel = map(distance, 200, 300, 255, 0);
+  //        //blueLightLevel = map(distance, 200, 300, 0, 255);
+  //        redLightLevel = map(distanceCm, 10, 30, 150, 50); //150;
+  //        greenLightLevel = map(distanceCm, 10, 30, 255, 155); //200;
+  //      }
+  //      else if (distanceCm < 50) {
+  //        //redLightLevel = map(distance, 200, 300, 255, 0);
+  //        //blueLightLevel = map(distance, 200, 300, 0, 255);
+  //        greenLightLevel = map(distanceCm, 30, 50, 150, 255);
+  //      }
+  //      else  {
+  //        //blueLightLevel = map(distance, 300, MAX_DISTANCE*10, 255, 0);
+  //        //greenLightLevel = map(distance, 300, MAX_DISTANCE*10, 0, 255);
+  //        blueLightLevel = map(distanceCm, 50, MAX_DISTANCE, 255, 10);
+  //      }
+  //
+  //      //      Serial.print("LED: R(");
+  //      //      Serial.print(redLightLevel);
+  //      //      Serial.print(") G(");
+  //      //      Serial.print(greenLightLevel);
+  //      //      Serial.print(") B(");
+  //      //      Serial.print(blueLightLevel);
+  //      //      Serial.println(")");
+  //
+  //      analogWrite(LED_RED_DISTANCE_PIN, redLightLevel);
+  //      analogWrite(LED_GREEN_DISTANCE_PIN, greenLightLevel);
+  //      analogWrite(LED_BLUE_DISTANCE_PIN, blueLightLevel);
+  //    }
 
 }
-
+//   80ms ->  800mA
+//  200ms  1017mA
+//  300ms  1018mA
 void valveOn() {
   digitalWrite(VALVE_1_ON_PIN, HIGH);
   digitalWrite(VALVE_1_OFF_PIN, LOW);
   digitalWrite(VALVE_1_ENABLE_PIN, HIGH);
   delay(20);
+  digitalWrite(VALVE_1_ON_PIN, LOW);
   digitalWrite(VALVE_1_ENABLE_PIN, LOW);
 
   digitalWrite(LED_OUTPUT, HIGH);
@@ -226,8 +264,10 @@ void valveOff() {
   digitalWrite(VALVE_1_OFF_PIN, HIGH);
   digitalWrite(VALVE_1_ENABLE_PIN, HIGH);
   delay(50);
+  digitalWrite(VALVE_1_OFF_PIN, LOW);
   digitalWrite(VALVE_1_ENABLE_PIN, LOW);
 
   digitalWrite(LED_OUTPUT, LOW);
 }
+
 
