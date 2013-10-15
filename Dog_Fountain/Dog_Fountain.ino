@@ -16,7 +16,7 @@ const int LED_BLUE_DISTANCE_PIN = 11;
 
 const long PING_EVERY = 500;
 const long PING_FEEDBACK_DURATION = 200;
-const long SONAR_DETECTION_DURATION = 5 * PING_EVERY;
+const long SONAR_DETECTION_DURATION = 5000;
 const int SONAR_DETECTION_DISTANCE = 60;
 const int SONAR_MAX_DISTANCE = SONAR_DETECTION_DISTANCE + (SONAR_DETECTION_DISTANCE / 5) ; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
@@ -141,7 +141,7 @@ void loop()
 
   if (pirDetectionUntilTimeMs < nowTimeMs && sonarDetectionUntilTimeMs < nowTimeMs) {
     // Nothing
-    int pulsePeriod = 5 * 1000;
+    int pulsePeriod = 6 * 1000;
     int pulseHalfPeriod = pulsePeriod / 2;
     int feedbackStep = (nowTimeMs % pulsePeriod);
     int lightLevel;
