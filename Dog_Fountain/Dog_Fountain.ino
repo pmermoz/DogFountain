@@ -2,9 +2,6 @@
 
 #include <NewPing.h>
 
-// Debug
-//const int LED_OUTPUT = 13;
-
 //--- PIR
 const int PIR_INPUT = 7;
 const long PIR_DETECTION_DURATION = 5 * 1000;
@@ -21,7 +18,7 @@ const long PING_EVERY = 500;
 const long PING_FEEDBACK_DURATION = 200;
 const long SONAR_DETECTION_DURATION = 5 * PING_EVERY;
 const int SONAR_DETECTION_DISTANCE = 60;
-const int SONAR_MAX_DISTANCE = 100; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
+const int SONAR_MAX_DISTANCE = SONAR_DETECTION_DISTANCE + (SONAR_DETECTION_DISTANCE / 5) ; // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 
 //--- Valve
 const int VALVE_1_ON_PIN = 4;
@@ -41,18 +38,14 @@ unsigned long nextPingTimeMs;
 boolean didDetectPresence = false;
 boolean didDetectFarePresence = false;
 
+long distanceCm = 0;
 
-static long distanceCm = 0;
-
-static boolean isWatering = false;
+boolean isWatering = false;
 
 //---
 
 void setup()
 {
-  //pinMode(LED_OUTPUT, OUTPUT);
-  //digitalWrite(LED_OUTPUT, LOW);
-
   //--- PIR
 
   pinMode(PIR_INPUT, INPUT);
@@ -75,34 +68,10 @@ void setup()
   digitalWrite(VALVE_1_OFF_PIN, HIGH);
 
   valveOff();
-  //valveOn();
-
-  //---
-
-  //Serial.begin(115200); // Open serial monitor at 115200 baud to see ping results.
-
-  // RED - > GREEN
-  // GREEN -> RED
-  // 
-  //digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
-  //digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
-  //digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
-  //digitalWrite(LED_OUTPUT, HIGH);
-
-  //digitalWrite(VALVE_1_ON_PIN, LOW);
-  //digitalWrite(VALVE_1_ON_PIN, HIGH);
-
-  //digitalWrite(VALVE_1_OFF_PIN, LOW);
-  //digitalWrite(VALVE_1_OFF_PIN, HIGH);
-
-  //digitalWrite(LED_OUTPUT, HIGH);
 }
 
 void loop()
 { 
-  //delay(1000);
-  //return;
-
   unsigned long nowTimeMs = millis();
 
   //--- PIR
@@ -146,8 +115,6 @@ void loop()
         }
         else {
           didDetectFarePresence = true;
-          // Fare detection will not start watering but maintain it
-          sonarDetectionUntilTimeMs  = nowTimeMs + SONAR_DETECTION_DURATION;
         }
       }
       if (isWatering && nowTimeMs > sonarDetectionUntilTimeMs && nowTimeMs > wateringUntilTimeMs) {
@@ -165,6 +132,12 @@ void loop()
   }
 
   //--- Feedback
+  
+  // Pulsing white    Sleep
+  // RED              PIR detection
+  // BLUE             PIR was detected
+  // Light GREEN      Fare presence detected
+  // GREEN            Presence detected during last SONAR_DETECTION_DURATION
 
   if (pirDetectionUntilTimeMs < nowTimeMs && sonarDetectionUntilTimeMs < nowTimeMs) {
     // Nothing
@@ -188,38 +161,26 @@ void loop()
     digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
     digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
   }
-  else { 
-    if (didDetectFarePresence) {
-      int greenLightLevel = map(distanceCm, SONAR_DETECTION_DISTANCE, SONAR_MAX_DISTANCE, 128, 0);
-
-      //digitalWrite(LED_RED_DISTANCE_PIN, LOW);
-      analogWrite(LED_GREEN_DISTANCE_PIN, greenLightLevel);
-      //digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
-    }
-    else
-    {
-      digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
-    }
-    
-    if (didPIRDetect) {
-      // Cyan
-      digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
-      //digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
-      digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
-    }
-    else if (pirDetectionUntilTimeMs >  nowTimeMs) {
-      // Blue
-      digitalWrite(LED_RED_DISTANCE_PIN, LOW);
-      //digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
-      digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
-    }
-    else
-    {
-      // Off
-      digitalWrite(LED_RED_DISTANCE_PIN, LOW);
-      //digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
-      digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
-    }
+  else if (didDetectFarePresence) {
+    digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
+    digitalWrite(LED_GREEN_DISTANCE_PIN, HIGH);
+    digitalWrite(LED_BLUE_DISTANCE_PIN, LOW); 
+  }
+  else if (didPIRDetect) {
+    digitalWrite(LED_RED_DISTANCE_PIN, HIGH);
+    digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
+    digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
+  }
+  else if (pirDetectionUntilTimeMs >  nowTimeMs) {
+    digitalWrite(LED_RED_DISTANCE_PIN, LOW);
+    digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
+    digitalWrite(LED_BLUE_DISTANCE_PIN, HIGH);
+  }
+  else
+  {
+    digitalWrite(LED_RED_DISTANCE_PIN, LOW);
+    digitalWrite(LED_GREEN_DISTANCE_PIN, LOW);
+    digitalWrite(LED_BLUE_DISTANCE_PIN, LOW);
   }
 }
 
@@ -229,7 +190,6 @@ void valveOn() {
   delay(100);
   digitalWrite(VALVE_1_ON_PIN, HIGH);
 
-  //digitalWrite(LED_OUTPUT, HIGH);
   isWatering = true;
 }
 
@@ -240,7 +200,6 @@ void valveOff() {
   delay(100);
   digitalWrite(VALVE_1_OFF_PIN, HIGH);
 
-  //digitalWrite(LED_OUTPUT, LOW);
   isWatering = false;
 }
 
