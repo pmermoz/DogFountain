@@ -23,6 +23,7 @@ const int SONAR_MAX_DISTANCE = SONAR_DETECTION_DISTANCE + (SONAR_DETECTION_DISTA
 //--- Valve
 const int VALVE_1_ON_PIN = 4;
 const int VALVE_1_OFF_PIN = 2;
+const int SWITCH_DELAY_MS = 50;
 
 const long MIN_WATERING_DURATION = 5 * 1000;
 
@@ -187,7 +188,7 @@ void loop()
 void valveOn() {
   digitalWrite(VALVE_1_OFF_PIN, HIGH);
   digitalWrite(VALVE_1_ON_PIN, LOW);
-  delay(100);
+  delay(SWITCH_DELAY_MS);
   digitalWrite(VALVE_1_ON_PIN, HIGH);
 
   isWatering = true;
@@ -196,8 +197,7 @@ void valveOn() {
 void valveOff() {
   digitalWrite(VALVE_1_ON_PIN, HIGH);
   digitalWrite(VALVE_1_OFF_PIN, LOW);
-  // 50ms was sometime not long enghout to close the valve (12v)
-  delay(100);
+  delay(SWITCH_DELAY_MS);
   digitalWrite(VALVE_1_OFF_PIN, HIGH);
 
   isWatering = false;
