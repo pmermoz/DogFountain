@@ -280,6 +280,8 @@ Using a combination of both sensor can improve the detection:
 The LED is very useful to debug the fountain code.  
 At night the box is glowing with a pulsing white light when the fountain sleeps... very nice effect.
 
+![](./image/DF_LightBox.gif)
+
 The RGB led provides the following feedback (in order):
 
 Light	| Description
